@@ -253,7 +253,18 @@ Set the state array with all of the fetched story objects */
   };
 
   render() {
-    const { fetchedData, isLoading } = this.state;
+    const {
+      fetchedData,
+      isLoading,
+      list,
+      searchTerm,
+      searchKey,
+      error,
+      sortKey
+    } = this.state;
+
+    const page = (list && list[searchKey] && list[searchKey].page) || 0;
+    const results = (list && list[searchKey] && list[searchKey].hits) || [];
 
     // Conditionally set the value of 'renderedStoriesOnPage' to show to the page view by executing the below IIFE -  for formatting the dates from UTC to human-readeable fomat - getDataToRender()
     let renderedStoriesOnPage = [];
@@ -345,13 +356,6 @@ Set the state array with all of the fetched story objects */
             Hacker News top 2
           </h4>
 
-          {console.log(
-            "Table Column is ",
-            this.state.tableState &&
-              this.state.tableState.columns &&
-              this.state.tableState.columns[0]
-          )}
-          {console.log("TABLE STATE IS", JSON.stringify(this.state.tableState))}
           <div
             style={{
               marginLeft: "35%",
@@ -367,6 +371,8 @@ Set the state array with all of the fetched story objects */
               autoFocus
               helperText={"Type to Search in Hacker News articles"}
               style={{ width: "340px" }}
+              value={searchTerm}
+              onChange={this.onSearchChange}
             />
             <Button
               style={{
@@ -378,6 +384,9 @@ Set the state array with all of the fetched story objects */
               variant="contained"
               size="medium"
               type="submit"
+              onClick={() => {
+                this.fetchSearchTopStories(searchKey, page + 1);
+              }}
             >
               Search
             </Button>
