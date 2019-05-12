@@ -31,6 +31,7 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import SiteLogo from "../../assets/Images/car.svg";
 import ToolsIcon from "../../assets/Images/Icons/images.jpg";
 import AllRoutes from "../../Routes/DashboardRoutes";
+import Moment from "react-moment";
 
 class SiteDesign extends React.Component {
   state = {
@@ -128,6 +129,9 @@ class SiteDesign extends React.Component {
                   Hacker News API Fetch
                 </Typography>
               )}
+              <div style={{ fontSize: "16px" }}>
+                <Moment format="dddd, MMMM Do YYYY, h:mm a" />
+              </div>
               <Switch
                 checked={themeType}
                 onChange={handleThemeTypeChange}

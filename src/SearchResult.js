@@ -9,50 +9,8 @@ const isEqual = require("lodash.isequal");
 const differenceWith = require("lodash.differencewith");
 const omit = require("lodash.omit");
 
-//Global URL constraints for the API call
-const DEFAULT_QUERY = "redux",
-  DEFAULT_HPP = "25",
-  PATH_BASE = "https://hn.algolia.com/api/v1",
-  PATH_SEARCH = "/search?",
-  PARAM_SEARCH = "query=",
-  PARAM_PAGE = "&page=",
-  PARAM_HPP = "&hitsPerPage=";
-
-const getEachStoryGivenId = (id, index) => {
-  //   const storyRank = index + 1;
-  return new Promise((resolve, reject) => {
-    axios
-      .get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`)
-      .then(res => {
-        let story = res.data;
-        console.log("RESPONSE IS ", story);
-        let result = omit(story, ["descendants", "time", "id", "type"]);
-        // console.log("THIS STORY", result);
-        // add the storyRank field since it does not exist yet
-        // story.storyRank = storyRank;
-        if (
-          result &&
-          Object.entries(result).length !== 0 &&
-          result.constructor === Object
-        ) {
-          resolve(result);
-        } else {
-          reject(new Error("No data received"));
-        }
-      });
-  });
-};
-
 export class Dashboard extends Component {
   state = {
-    prevStoriesIds: [],
-    fetchedData: [],
-    isLoading: false,
-    tableState: {},
-    openNewItemAddedConfirmSnackbar: false,
-    noOfNewStoryAfterPolling: 0,
-    rowsPerPage: 10,
-    shouldSearchCompOpen: false,
     list: null, //list saves the results search by the user, it also works as a cache, before a request is made to Hacker News API, the list is checked. If the term searched exists then load the data from the list
     searchKey: "", //the searchKey keeps the latest searchTerm typed by the user, the reason is for the client side cache
     searchTerm: DEFAULT_QUERY, //every time the user types something in the input search, this constantly changes
@@ -182,75 +140,6 @@ Set the state array with all of the fetched story objects */
     clearInterval(this.timer);
     this.timer = null;
   }
-
-  //  ************ BELOW SECTION FOR SEARCHING API *****************
-
-  fetchSearchTopStories = (searchTerm, pageNo = 0) => {
-    const URL = `${PATH_BASE}${PATH_SEARCH}${PARAM_SEARCH}${searchTerm}${PARAM_PAGE}${pageNo}${PARAM_HPP}${DEFAULT_HPP}`;
-
-    this.setState({ isLoading: true });
-    axios(URL)
-      .then(result => this.setSearchTopStories(result.data))
-      .catch(error => this._isMounted && this.setState({ error })); //in case something goes wrong with the API request, set the state and display it in the render()
-  };
-
-  //This method is triggered on form search submission
-  onSearchSubmit = event => {
-    const { searchTerm } = this.state;
-    //maybe the input is empty
-    if (searchTerm) {
-      this.setState({ searchKey: searchTerm }); //once the user does the submission, save the latest value searched in the SearchKey. In this way, each time we store whatever data the user has submitted to the cache.
-
-      if (this.checkTheCacheFirst(searchTerm)) {
-        //if there is not in the cache, then this is a new search
-        this.fetchSearchTopStories(searchTerm);
-      }
-    }
-    event.preventDefault();
-  };
-
-  //Once the AXIOS request is done, update the current list of data, append the new data.
-  setSearchTopStories = data => {
-    console.log(data);
-
-    //new data
-    const { hits, page } = data;
-
-    const { searchKey, list } = this.state;
-
-    //(cache)If the list not empty and the search term that we typed has been searched before, get those already saved hits
-    const oldHits = list && list[searchKey] ? list[searchKey].hits : [];
-
-    const updatedHits = [...oldHits, ...hits]; //concatenate first the old hits (if any) and then the new hits
-
-    //update state
-    this.setState({
-      list: { ...list, [searchKey]: { hits: updatedHits, page } },
-      isLoading: false,
-      shouldSearchCompOpen: true
-    });
-  };
-
-  //check cache
-  checkTheCacheFirst = searchTerm => !this.state.list[searchTerm];
-
-  onDismiss = id => {
-    const { searchKey, list } = this.state;
-    const { hits, page } = list[searchKey];
-    const isNotId = item => item.objectID !== id;
-
-    const updatedHits = hits.filter(isNotId);
-
-    this.setState({
-      list: { ...list, [searchKey]: { hits: updatedHits, page } }
-    });
-  };
-  //every time you type something at search, the "searchTerm" in the local state in App.js changes for if you click the button to fetch the API again, it will have the latest value typed
-  onSearchChange = event => {
-    this.setState({
-      searchTerm: event.target.value
-    });
-  };
 
   render() {
     const { fetchedData, isLoading } = this.state;
