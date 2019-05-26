@@ -183,7 +183,7 @@ Set the state array with all of the fetched story objects */
     this.timer = null;
   }
 
-  //  ************ BELOW SECTION FOR SEARCHING API *****************
+  //  ************ BELOW SECTION FOR SEARCHING API, which is what I am currently working *****************
 
   fetchSearchTopStories = (searchTerm, pageNo = 0) => {
     const URL = `${PATH_BASE}${PATH_SEARCH}${PARAM_SEARCH}${searchTerm}${PARAM_PAGE}${pageNo}${PARAM_HPP}${DEFAULT_HPP}`;
